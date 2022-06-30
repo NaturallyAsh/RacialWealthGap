@@ -1,248 +1,314 @@
 ---
 title: "Project"
-date: 2021-05-01
+date: "Last compiled on: `r Sys.Date()`"
 output: html_notebook
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   eval = TRUE,
-  echo = FALSE)
+  echo = FALSE,
+  message = FALSE
+  )
+
+library(knitr)
+library(kableExtra)
+library(scales)
+library(plotly)
+library(xfun)
+library(tidyverse)
+
+pkg_load2(c("htmltools", "mime"))
+
+source("scripts/rw_datasets.R", local = knit_global())
+source("scripts/rw_datasets_desc.R", local = knit_global())
+source("theme/my_swd_theme.R")
 ```
 ## Racial Wealth Gap {.tabset}
 
-### Synopsis
+### **Synopsis**
 
-### Packages Required
+**Problem:**
+The wealth gap between Whites and BIPOC is astoundingly wide. There are multitude of potential contributing factors. The goal of this report is to explore the data to identify trends and relationships.
 
-```{r}
+------------
+
+**Packages Required:**
+```
 library(tidyverse)
 library(knitr)
+library(kableExtra)
+library(scales)
+library(plotly)
+library(xfun)
 ```
+-------------
 
 ### Data Preparation {.tabset}
 
 #### Data Import
+The 10 datasets originally pulled from the [Urban Institute](https://apps.urban.org/features/wealth-inequality-charts/) and [US Census](https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-income-households.html).  
 
-```{r, eval=FALSE, echo=TRUE}
-lifetime_earn <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/lifetime_earn.csv')
+Retrievable from this [Github Repo](https://github.com/rfordatascience/tidytuesday/tree/master/data/2021/2021-02-09).  
+<hr>
 
-student_debt <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/student_debt.csv')
-
-retirement <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/retirement.csv')
-
-home_owner <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/home_owner.csv')
-
-race_wealth <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/race_wealth.csv')
-
-income_time <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_time.csv')
-
-income_limits <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_limits.csv')
-
-income_aggregate <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_aggregate.csv')
-
-income_distribution <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_distribution.csv')
-
-income_mean <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_mean.csv')
+```
+lifetime_earn <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/lifetime_earn.csv')
+```
+```
+student_debt <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/student_debt.csv')
+```
+```
+retirement <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/retirement.csv')
+```
+```
+home_owner <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/home_owner.csv')
+```
+```
+race_wealth <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/race_wealth.csv')
+```
+```
+income_time <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_time.csv')
+```
+```
+income_limits <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_limits.csv')
+```
+```
+income_aggregate <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_aggregate.csv')
+```
+```
+income_distribution <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_distribution.csv')
+```
+```
+income_mean <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_mean.csv')
 ```
 
-#### Data Description
+#### Data Dictionary
 
-The 10 datasets come from the [Urban Institute](https://apps.urban.org/features/wealth-inequality-charts/) and [US Census](https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-income-households.html).
 
-`lifetime_earn.csv`:  
+
+`lifetime_earn.csv` ([Source:](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/lifetime_earn.csv)):
+
 Average lifetime earning by race/gender
 
 ```{r}
-var1.varname <- colnames(lifetime_earn)
-var1.class <- lapply(lifetime_earn, class)
-var1.desc <- c(
-  "gender column",
-  "Racial group",
-  "Lifetime earnings"
-)
-data1.desc <- as_tibble(cbind(var1.varname, var1.class, var1.desc))
-colnames(data1.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data1.desc)
 ```
+***
 
-`student_dept.csv`:  
-Average family student load debt for aged 25-55, by race and year normalized to 2016 dollars.
+`student_dept.csv` ([Source](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/student_debt.csv)):
+
+Average family student load debt for aged 25-55, by race and year normalized to 2016 dollars.  
 
 ```{r}
-var2.varname <- colnames(student_debt)
-var2.class <- lapply(student_debt, class)
-var2.desc <- c(
-  "Year of measure",
-  "Racial group",
-  "Loan dept",
-  "Share of families with student loan dept"
-)
-data2.desc <- as_tibble(cbind(var2.varname, var2.class, var2.desc))
-colnames(data2.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data2.desc)
 ```
-`retirement.csv`:  
+***
+
+`retirement.csv` ([Source](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/retirement.csv)):
+
 Average family liquid retirement savings normalized to 2016 dollars.
 
 ```{r}
-var3.varname <- colnames(retirement)
-var3.class <- lapply(retirement, class)
-var3.desc <- c(
-  "Year",
-  "Racial group",
-  "Retirement dollars"
-)
-data3.desc <- as_tibble(cbind(var3.varname, var3.class, var3.desc))
-colnames(data3.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data3.desc)
 ```
+***
 
-`home_owner.csv`:  
+`home_owner.csv` ([Source](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/home_owner.csv)):
+
 Home ownership percentage for families.
 
 ```{r}
-var4.varname <- colnames(home_owner)
-var4.class <- lapply(home_owner, class)
-var4.desc <- c(
-  "Year",
-  "Racial group",
-  "Home ownership by race/ethnicity"
-)
-data4.desc <- as_tibble(cbind(var4.varname, var4.class, var4.desc))
-colnames(data4.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data4.desc)
 ```
+***
 
-`race_wealth.csv`:  
+`race_wealth.csv` ([Source](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/race_wealth.csv)):  
 Family wealth by race/year/measure normalized to 2016, with measures of central tendency with mean and median.
 
 ```{r}
-var5.varname <- colnames(race_wealth)
-var5.class <- lapply(race_wealth, class)
-var5.desc <- c(
-  "Type of measure, either median or mean",
-  "Year",
-  "Racial group",
-  "Family wealth"
-)
-data5.desc <- as_tibble(cbind(var5.varname, var5.class, var5.desc))
-colnames(data5.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data5.desc)
 ```
+***
 
-`income_time.csv`:  
+`income_time.csv` ([Source](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_time.csv)):  
 Family-level income by percentile and year.
 
 ```{r}
-var6.varname <- colnames(income_time)
-var6.class <- lapply(income_time, class)
-var6.desc <- c(
-  "Year",
-  "Income percentile (10th, 50th, 90th)",
-  "Familial income"
-)
-data6.desc <- as_tibble(cbind(var6.varname, var6.class, var6.desc))
-colnames(data6.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data6.desc)
 ```
+***
 
-`income_limits.csv`:  
+`income_limits.csv` ([Source](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_limits.csv)):  
 Familial income limits for each fifth and top 5% of households by year and race.
 
 ```{r}
-var7.varname <- colnames(income_limits)
-var7.class <- lapply(income_limits, class)
-var7.desc <- c(
-  "Year",
-  "Racial group",
-  "Dollars in that year or normalized to 2019",
-  "Number of households by racial group",
-  "Income quintile as well as top 5%",
-  "Income in US dollars, specific to dollar type"
-)
-data7.desc <- as_tibble(cbind(var7.varname, var7.class, var7.desc))
-colnames(data7.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data7.desc)
 ```
+***
 
-`income_aggregate.csv`:  
+`income_aggregate.csv` ([Source](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_aggregate.csv)):  
 Share of aggregate income received by each fifth and top 5% of each racial group/household.
 
 ```{r}
-var8.varname <- colnames(income_aggregate)
-var8.class <- lapply(income_aggregate, class)
-var8.desc <- c(
-  "Year",
-  "Racial group",
-  "Number of households by racial group",
-  "Income quintile and/or top 5%",
-  "Income share as a percentage"
-)
-data8.desc <- as_tibble(cbind(var8.varname, var8.class, var8.desc))
-colnames(data8.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data8.desc)
 ```
+***
 
-`income_distribution.csv`:  
+`income_distribution.csv` ([Source](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_distribution.csv)):  
 Households by total money income, race, and hispanic origin of householder separated by year and income groups.
 
 ```{r}
-var9.varname <- colnames(income_distribution)
-var9.class <- lapply(income_distribution, class)
-var9.desc <- c(
-  "Year",
-  "Racial group",
-  "Number of households",
-  "Income median",
-  "Income median margin of error",
-  "Income mean",
-  "Income mean margin of error",
-  "Income bracket (9 total brackets between <$15,000 and >$200,000",
-  "Income distribution as the percentage of each year/racial group - should add up to 100 for a specific year and race"
-)
-data9.desc <- as_tibble(cbind(var9.varname, var9.class, var9.desc))
-colnames(data9.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data9.desc)
 ```
+***
 
-`income_mean.csv`:  
+`income_mean.csv` ([Source](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_mean.csv)):  
 Mean income received by each fifth and top 5% of each racial group.
 
 ```{r}
-var10.varname <- colnames(income_mean)
-var10.class <- lapply(income_mean, class)
-var10.desc <- c(
-  "Year",
-  "Racial group",
-  "Dollar type, i.e. dollar relative to that year or normalized to 2019",
-  "Income quintile and/or top 5%",
-  "Income dollar average"
-)
-data10.desc <- as_tibble(cbind(var10.varname, var10.class, var10.desc))
-colnames(data10.desc) <- c("Variable Name", "Data Class", "Description")
 kable(data10.desc)
 ```
-
-#### Figuring data out and what to do with it
-
 
 ### Exploratory Data Analysis (EDA) {.tabset}
 
 #### Family Wealth Analysis
 
-*Table showing average family wealth by race in 2016*
+**Average family wealth (1963-2016)**  
+Family wealth a a family's assets (i.e., savings, real estate, businesses) minus debt. 
+
 ```{r}
-race_wealth.means <- race_wealth %>% filter(year == '2016', race != "Non-White", type == 'Average') %>% select(race, wealth_family) %>% group_by(race) %>% arrange(desc(race))
+race_mean_time <- race_wealth |> 
+  filter(type == "Average") |> # filter by average/mean wealth (other option is by median)
+  group_by(year, race) |> 
+  summarise(wealth_family = wealth_family) 
 
-race_wealth.means$race <- as_factor(race_wealth.means$race)
+rw_mean_time_plot <- ggplot(race_mean_time, aes(x = year, y = wealth_family, color = race)) +
+  geom_line() +
+  geom_point(size = .5) +
+  scale_color_brewer(palette = "Set2") +
+  scale_y_continuous(limits = c(0, 950000), breaks = seq(0, 950000, 150000), labels = label_dollar()) +
+  labs(
+    title = "Average family wealth over time, by race",
+    x = "Year",
+    y = "Family Wealth",
+  ) +
+  my_swd_theme() + theme(
+    legend.position = "top",
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+  )
 
-kable(race_wealth.means)
+ggplotly(rw_mean_time_plot) |> 
+  layout(
+    legend = list( # the orientation = "h" arg fixes the legend position "top" issue
+      orientation = "h", 
+      x = .05, 
+      y = 1.04,
+      title = list(
+        text = ""
+      )
+      )
+  )
 ```
-*Bar chart showing average family wealth*
+
+In 1963, the average wealth of white families was \$121,129, which is **6.2 times** greater than the average wealth of non-white families of \$19,503. In 2016, White average wealth of \$919,336 was **6.6 times** greater than Black average wealth of $139,523.  
+
+
+
+**Median family wealth (1963-2016)**  
+Average family wealth is more influenced by very rich families and does not represent the "typical" experience. Median wealth—or the wealth of the household at the middle of a distribution—gives the experience of the typical family. 
+
 ```{r}
-rw_plot <- ggplot(race_wealth.means) + geom_bar(aes(x=race, y=wealth_family, fill=race), stat = 'identity') + scale_y_continuous(breaks = c(200000, 400000, 600000, 800000),  labels = comma) + labs(title='Average Family wealth by race in 2016' ,x='Race', y='Family Wealth Mean')
+race_median_time <- race_wealth |> 
+  filter(type == "Median") |> # filter by median wealth (other option is by average)
+  group_by(year, race) |> 
+  mutate(race = as_factor(race)) |> 
+  summarise(wealth_family = wealth_family) 
 
-ggplotly(rw_plot)
+rw_median_time_plot <- ggplot(race_median_time, aes(x = year, y = wealth_family, color = race)) +
+  geom_line() +
+  geom_point(size = .5) +
+  scale_color_brewer(palette = "Set2") +
+  scale_y_continuous(limits = c(0, 200000), breaks = seq(0, 200000, 50000), labels = label_dollar()) +
+  labs(
+    title = "Median family wealth over time, by race",
+    x = "Year",
+    y = "Family Wealth",
+  ) +
+  my_swd_theme() + theme(
+    legend.position = "top",
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+  )
+ggplotly(rw_median_time_plot) |> 
+  layout(
+    legend = list( # the orientation = "h" arg fixes the legend position "top" issue
+      orientation = "h", 
+      x = .05, 
+      y = 1.04,
+      title = list(
+        text = ""
+      )
+      )
+  )
+```
+In 1963, the median of white family wealth was \$47,654 which is **19.3 times** greater than the median of non-white family wealth. White median family wealth was \$171,000 in 2016, which is **9.8 times** greater than Black median family wealth of $17,409. While the median wealth gap has lessened from 1963 to 2016, and is less than the average family wealth gap, the gap trends has shown to be consistent over time and the disparities remain significant.
+
+#### Income Analysis
+
+```{r}
+# ggplot(home_owner, aes(x = year, y = home_owner_pct, color = race)) +
+#   geom_line()
 ```
 
-#### Retirement Savings Analysis
+
+**Lifetime Earnings**  
+Those with lesser incomes might find it more difficult to save. 
+<br><br>
+
+```{r}
+
+lifetime_earn_plot <- lifetime_earn |> 
+  mutate(
+    race = as_factor(race)
+  )
+
+ggplot(lifetime_earn_plot, aes(x = race, y = lifetime_earn, fill = race)) + 
+  geom_col() + 
+  scale_y_continuous(limits = c(0, 3000000), breaks = seq(0, 3000000, 750000), labels = label_dollar()) +
+  scale_fill_brewer(palette = "Set2") +
+  facet_wrap(~gender) +
+  labs(
+    title = "Average Accumulated Real Lifetime Earnings at Ages 58–62 (Born 1950-54) \nby Gender and Race/Ethnicity",
+    y = "Lifetime Earnings"
+  ) +
+  theme_bw() + theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title.y = element_blank(),
+    legend.title = element_blank(),
+    legend.position = c(.85, .85)
+  )
+```
+
+The average lifetime income of a white male is \$2.7 million, compared to \$1.8 million for black men and \$2.0 million for Hispanic men. For women, the disparity in lifetime earnings is less pronounced: the average white woman makes \$1.5 million, compared to \$1.3 million for black women and $1.1 million for Hispanic women. Part of these differences can be attributed to historical disadvantages that still have an impact on future generations.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
