@@ -18,6 +18,10 @@ library(plotly)
 library(xfun)
 library(tidyverse)
 library(hrbrthemes)
+library(ggtext)
+library(grid)
+library(gridExtra)
+library(gridtext)
 
 pkg_load2(c("htmltools", "mime"))
 
@@ -42,6 +46,10 @@ library(kableExtra)
 library(scales)
 library(plotly)
 library(xfun)
+library(ggtext)
+library(grid)
+library(gridExtra)
+library(gridtext)
 ```
 -------------
 
@@ -175,65 +183,69 @@ kable(data10.desc)
 
 #### Family Wealth Analysis
 
+**Average family wealth (1963-2016)**  
+Family wealth a a family's assets (i.e., savings, real estate, businesses) minus debt. Average wealth is indicative of the prosperity of a group as a whole in relation to other groups.
+
 
 ```{r}
-# race_mean_time <- race_wealth |> 
-#   filter(type == "Average") |> # filter by average/mean wealth (other option is by median)
-#   group_by(year, race) |> 
-#   summarise(wealth_family = wealth_family) 
-# 
-# rw_mean_time_plot <- ggplot(race_mean_time, aes(x = year, y = wealth_family, color = race)) +
-#   geom_line() +
-#   geom_point(size = .5) +
-#   scale_color_brewer(palette = "Set2") +
-#   scale_y_continuous(limits = c(0, 950000), breaks = seq(0, 950000, 150000), labels = label_dollar()) +
-#   labs(
-#     title = "Average family wealth over time, by race",
-#     x = "Year",
-#     y = "Family Wealth",
-#   ) +
-#   my_swd_theme() + theme(
-#     legend.position = "top",
-#     axis.title.x = element_blank(),
-#     axis.title.y = element_blank(),
-#     plot.title = element_text(size = 14, face = "bold"),
-#   )
-# 
-# ggplotly(rw_mean_time_plot) |> 
-#   layout(
-#     legend = list( # the orientation = "h" arg fixes the legend position "top" issue
-#       orientation = "h", 
-#       x = .05, 
-#       y = 1.04,
-#       title = list(
-#         text = ""
-#       )
-#       )
-#   )
-```
-
-
-
-
-
-**Median family wealth (1963-2016)**  
-Family wealth a a family's assets (i.e., savings, real estate, businesses) minus debt. Median wealth—or the wealth of the household at the middle of a distribution—represents the experience of the typical family. 
-
-```{r}
-race_median_time <- race_wealth |> 
-  filter(type == "Median") |> # filter by median wealth (other option is by average)
+race_mean_time <- race_wealth |> 
+  filter(type == "Average", race %in% c("Black", "Non-White", "White")) |> # filter by average wealth (other option is by median)
   group_by(year, race) |> 
   mutate(race = as_factor(race)) |> 
-  summarise(wealth_family = wealth_family) 
+  summarise(wealth_family = wealth_family, .groups = "drop") |> # explicitly drop groups using .groups = "drop"
+  drop_na()
 
 
-ggplot(race_median_time, aes(x = year, y = wealth_family, color = race)) +
+line_1963_grob <- segmentsGrob(
+  x0 = unit(0.045, "npc"),
+  y0 = unit(.17, "npc"),
+  x1 = unit(0.045, "npc"),
+  y1 = unit(0.065, "npc"),
+  default.units = "npc",
+  arrow = NULL, name = NULL, gp = gpar(col = SILVER), vp = NULL
+)
+
+times_6.2_grob <- grobTree(richtext_grob(
+  c("<span style='font-size:10pt'>In 1963</span>","<span style=color:ORANGERED>6.2X</span>","<span style='font-size:10pt'>greater</span>"),
+  x = c(.1,.1,.1),
+  y = c(.45,.35,.29),
+  align_widths = TRUE,
+  padding = unit(c(5,5,5,5), "pt"),
+  gp = gpar(fontsize = 20, col = BLUEGRAY)
+))
+
+times_6.6_grob <- grobTree(richtext_grob(
+  c("<span style='font-size:10pt'>In 2016</span>","<span style=color:PURPLE>6.6X</span>","<span style='font-size:10pt'>greater</span>"),
+  x = c(.9,.9,.9),
+  y = c(.45,.35,.29),
+  align_widths = TRUE,
+  padding = unit(c(5,5,5,5), "pt"),
+  gp = gpar(fontsize = 20, col = BLUEGRAY)
+))
+
+
+line_2016_grob <- segmentsGrob(
+  x0 = unit(0.955, "npc"),
+  y0 = unit(.88, "npc"),
+  x1 = unit(0.955, "npc"),
+  y1 = unit(0.177, "npc"),
+  default.units = "npc",
+  arrow = NULL, name = NULL, gp = gpar(col = SILVER), vp = NULL
+)
+```
+
+```{r}
+ggplot(race_mean_time, aes(x = year, y = wealth_family, color = race)) +
+  geom_point(data = race_mean_time |> filter(year == 2016 | year == 1963)) +
   geom_line() +
-  geom_point(size = .5) +
   scale_color_brewer(palette = "Set2") +
-  scale_y_continuous(limits = c(0, 200000), breaks = seq(0, 200000, 50000), labels = label_dollar()) +
+  scale_y_continuous(limits = c(0, 1000000), breaks = seq(0, 1000000, 200000), labels = label_dollar()) +
+  annotation_custom(line_1963_grob) +
+  annotation_custom(line_2016_grob) +
+  annotation_custom(times_6.2_grob) +
+  annotation_custom(times_6.6_grob) +
   labs(
-    title = "Median family wealth over time, by race",
+    title = "Average family wealth over time, by race",
     x = "Year",
     y = "Family Wealth",
   ) +
@@ -242,11 +254,14 @@ ggplot(race_median_time, aes(x = year, y = wealth_family, color = race)) +
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
     plot.title = element_text(size = 14, face = "bold"),
+    legend.title = element_blank()
   )
 ```
-In 1963, the median of white family wealth was \$47,654 which is **19.3 times** greater than the median of non-white family wealth. White median family wealth was \$171,000 in 2016, which is **9.8 times** greater than Black median family wealth of $17,409. While the median wealth gap has lessened from 1963 to 2016, the gap trends has shown to be consistent over time and the disparities remain significant.
 
+
+In 1963, the average wealth of white families was \$121,129, which is **6.2 times** greater than the average wealth of non-white families of \$19,503. In 2016, White average wealth of \$919,336 was **6.6 times** greater than Black average wealth of $139,523. This gap trend has slowly widened over time, highlighting the growing disparities.
 <br><br>
+
 
 #### Income Analysis
 
@@ -259,12 +274,21 @@ Those with lesser incomes might find it more difficult to save.
 lifetime_earn_plot <- lifetime_earn |> 
   mutate(
     race = as_factor(race)
-  )
+  ) |> 
+  drop_na()
 
+life_color_scale <- c(
+  "White" = BLUEGRAY,
+  "Black" = LIGHTGRAY,
+  "Hispanic any race" = LIGHTGRAY
+)
+```
+
+```{r}
 ggplot(lifetime_earn_plot, aes(x = race, y = lifetime_earn, fill = race)) + 
-  geom_col() + 
+  geom_col(color = "grey") + 
   scale_y_continuous(limits = c(0, 3000000), breaks = seq(0, 3000000, 750000), labels = label_dollar()) +
-  scale_fill_ipsum() +
+  scale_fill_manual(values = life_color_scale) +
   facet_wrap(~gender) +
   labs(
     title = "Lifetime Earnings Inequity",
@@ -279,12 +303,13 @@ ggplot(lifetime_earn_plot, aes(x = race, y = lifetime_earn, fill = race)) +
     axis.title.y = element_blank(),
     legend.title = element_blank(),
     legend.position = c(.85, .80),
-    plot.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold"),
     # plot.title.position = "plot",
-    plot.subtitle = element_text(size = 8, margin = margin(0,0,.5,0,"cm")),
-    plot.margin = margin(1, 1, 1, 1, "cm"),
+    plot.subtitle = element_text(size = 9, margin = margin(0,0,.5,0,"cm")),
+    plot.margin = margin(1, .5, 1, .5, "cm"),
   )
 ```
+
 
 The average lifetime income of a white male is \$2.7 million, compared to \$1.8 million for black men and \$2.0 million for Hispanic men. For women, the disparity in lifetime earnings is less pronounced: the average white woman makes \$1.5 million, compared to \$1.3 million for black women and $1.1 million for Hispanic women. Part of these differences can be attributed to historical disadvantages that still have an impact on future generations.
 
