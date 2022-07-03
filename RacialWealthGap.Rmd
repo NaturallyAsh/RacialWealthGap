@@ -1,7 +1,9 @@
 ---
 title: "Project"
-date: "Last compiled on: `r Sys.Date()`"
-output: html_notebook
+date: 'Last compiled on: `r Sys.Date()`'
+output:
+  html_document:
+    df_print: paged
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -186,6 +188,12 @@ kable(data10.desc)
 **Average family wealth (1963-2016)**  
 Family wealth a a family's assets (i.e., savings, real estate, businesses) minus debt. Average wealth is indicative of the prosperity of a group as a whole in relation to other groups.
 
+```{css}
+.align-img {
+  display: flex;
+  justify-content: center;
+}
+```
 
 ```{r}
 race_mean_time <- race_wealth |> 
@@ -234,7 +242,7 @@ line_2016_grob <- segmentsGrob(
 )
 ```
 
-```{r}
+```{r fig.align='center'}
 ggplot(race_mean_time, aes(x = year, y = wealth_family, color = race)) +
   geom_point(data = race_mean_time |> filter(year == 2016 | year == 1963)) +
   geom_line() +
@@ -284,7 +292,7 @@ life_color_scale <- c(
 )
 ```
 
-```{r}
+```{r fig.align='center'}
 ggplot(lifetime_earn_plot, aes(x = race, y = lifetime_earn, fill = race)) + 
   geom_col(color = "grey") + 
   scale_y_continuous(limits = c(0, 3000000), breaks = seq(0, 3000000, 750000), labels = label_dollar()) +
