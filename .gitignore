@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 *.nb.html
+scripts
+RacialWealthGap_files
+.DS_Store
