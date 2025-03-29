@@ -180,18 +180,32 @@ This visualization illustrates clearly how economic growth has largely benefited
 
 
 ```{r}
+
+format_currency_compact <- function(x) {
+  ifelse(abs(x) >= 1e6,
+         paste0("$", format(round(x/1e6, 1), nsmall = 1), "M"),
+         ifelse(abs(x) >= 1e3,
+                paste0("$", format(round(x/1e3, 0), nsmall = 0, trim = TRUE), "K"),
+                paste0("$", x)))}
+
 lifetime_wealth |>
-  filter(type == "Median", race %in% c("Black", "White"), year > min(year)) |>
+  filter(type == "Average", race %in% c("Black", "White"), year > min(year)) |>
+  mutate(formatted_wealth = format_currency_compact(wealth_lifetime)) |> 
   ggplot(aes(x = year, y = wealth_lifetime)) +
   geom_line(aes(group = year), size = 1) +
-  geom_point(aes(color = race), size = 9) +
-  geom_text(aes(label = paste0(round(wealth_lifetime / 10^3, 1), "K")), size = 2, fontface = "bold", color = WHITE) +
-  scale_x_continuous(breaks = lifetime_wealth$year, label = lifetime_wealth$year, expand = expand_scale(mult = c(0.1, 0.1))) +
-  scale_y_continuous(labels = function(y) paste0("$", round(y / 10^3, 0), "K"), breaks = seq(0, 425000, 50000)) +
+  geom_point(aes(color = race), size = 9.6) +
+  # geom_text(aes(label = paste0(round(wealth_lifetime / 10^3, 1), "K")), size = 2, fontface = "bold", color = WHITE) +
+  # geom_text(aes(label = label_currency()(wealth_lifetime)), size = 2, fontface = "bold", color = WHITE) +
+  geom_text(aes(label = formatted_wealth), size = 2, fontface = "bold", color = WHITE) +
+  scale_x_continuous(breaks = lifetime_wealth$year, label = lifetime_wealth$year, expand = expand_scale(mult = c(0.07, 0.1))) +
+  # scale_y_continuous(labels = label_currency(scale_cut = cut_long_scale()), breaks = seq(0, 1400000, 200000)) +
+  scale_y_continuous(labels = format_currency_compact, breaks = seq(0, 1400000, 200000)) +
+  # ylim(0, 1400000) +
+  expand_limits(y = 0) +
   coord_flip() +
   labs(
     title = "Lifetime Wealth Inequity",
-    subtitle = "Median Lifetime Wealth Comparison of Black and White Families",
+    subtitle = "Average Lifetime Wealth Comparison of Black and White Families",
     y = "Lifetime Earnings",
     x = "",
     caption = "Source: U.S. Census Bureau",
@@ -200,13 +214,9 @@ lifetime_wealth |>
   project_theme()
 ```
 
-This visualization clearly shows a large and long-lasting difference in average lifetime wealth between Black and White Americans. White Americans consistently build up significantly more wealth over their lifetimes—around $370,000 compared to just $208,000 for Black Americans. This gives White Americans roughly a 78% advantage. 
-
-This $162,000 gap can be explained by multiple connected factors: large differences in lifetime income (White men earn around $2.7 million over a lifetime compared to $1.8 million for Black men), unequal opportunities like homeownership and retirement saving, and the lasting effects of historical barriers that prevented Black families from building wealth. 
+This visualization clearly shows a large and long-lasting difference in average lifetime wealth between Black and White Americans. White Americans consistently build up significantly more wealth over their lifetimes—around $1.3 million compared to just $278,000 for Black Americans. 
 
 These gaps are important because lifetime wealth—not just annual income—influences a family's ability to handle financial emergencies, secure retirement, and pass on financial help to future generations. The fact that this gap hasn't changed significantly over time highlights how economic inequalities affect people throughout their lives, building up disadvantages that impact future generations as well. 
-
-
 
 
 
@@ -265,14 +275,9 @@ home_owner |>
 
 This visualization shows a troubling gap in homeownership trends between racial groups. Despite 40 years of economic growth and housing policies, homeownership among Black Americans actually declined by 2.6 percentage points from 1976 to 2016. 
 
-This decline is very different from other groups: White Americans saw a small 0.4 percentage point increase (from already high rates). This widening gap clearly shows that housing opportunities—and the wealth they create—are not shared equally. 
+This decline is very different from White Americans, who saw a small 0.4 percentage point increase (from already high rates). This widening gap clearly shows that housing opportunities—and the wealth they create—are not shared equally. 
 
 This trend matters because homeownership is the main way most American families build wealth. Declining Black homeownership contributes directly to the wider wealth gap we've discussed. 
-
-Several reasons might explain this: the 2008 housing crisis hurt Black communities more severely, discrimination in lending continues, lower incomes make it harder to save for home down payments, and rising costs (gentrification) in traditionally Black neighborhoods push people out. 
-
-Overall, these findings tell us that despite laws meant to ensure fairness in housing, structural problems continue to limit Black Americans’ access to homeownership. This has gotten worse over time and represents a real setback in creating economic fairness. 
-
 
 
 
@@ -313,14 +318,9 @@ ggplot(retirement_plot, aes(x = year, y = retirement, group = race)) +
   )
 ```
 
-This visualization shows a major racial gap in retirement savings, which has grown significantly between 1989 and 2016. White families have built around $158,000 in retirement savings, about 6 times more than Black ($29,000) families. 
+This visualization shows a major racial gap in retirement savings, which has grown significantly between 1989 and 2016. White families have built around $158,000 in retirement savings, about 6 times more than Black ($25,000) families. 
 
-This $128,000 gap means years of difference in retirement security. All groups started at lower levels in 1989, but White families' savings grew rapidly as retirement savings shifted from company pensions to individual retirement accounts. Black families, however, saw only very small improvements during this period. 
-
-The gap results from several factors: unequal incomes, uneven access to employer-sponsored retirement plans, families having limited wealth to pass down to children, and inequalities in the financial system. This has serious consequences. Black Americans have greater risk of poverty as they age, higher dependence on limited Social Security benefits, delayed retirement age, and less ability to handle financial uncertainty. 
-
-Unless there are changes in the current system, this gap in retirement savings will keep racial inequality going for generations, negatively affecting the financial security and dignity of millions of older Americans. 
-
+This $133,000 gap means years of difference in retirement security. All groups started at lower levels in 1989, but White families' savings grew rapidly as retirement savings shifted from company pensions to individual retirement accounts. Black families, however, saw only very small improvements during this period. 
 
 
 
